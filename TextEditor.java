@@ -3,15 +3,15 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class TextEditor implements WindowListener,ActionListener,KeyListener
+public class TextEditor implements WindowListener,ActionListener,KeyListener,MouseListener
 {
 	Button b_prompt_save_new,b_prompt_dontsave_new,b_prompt_cancel_new,b_prompt_save_new_fpn; ///Prompt NEW buttons
 	Button b_prompt_save_open,b_prompt_dontsave_open,b_prompt_cancel_open,b_prompt_save_open_fpn; ///Prompt OPEN buttons
-	Button b_prompt_save_exit,b_prompt_dontsave_exit,b_prompt_cancel_exit; ///Prompt EXIT buttons
+	Button b_prompt_save_exit,b_prompt_dontsave_exit,b_prompt_cancel_exit,b_prompt_save_exit_fpn; ///Prompt EXIT buttons
 	Button b_find_cancel,b_find_next; ///Find dialog buttons
 	Button b_findReplace_findnext,b_findReplace_replace,b_findReplace_replaceAll,b_findReplace_cancel; ///Find and Replace dialog buttons
 	
-	boolean once = false,keypressed = false,hasfilepath = false,promptgone = true;
+	boolean once = false,keypressed = false,hasfilepath = false,promptgone = true,findgone = true,replacegone = true,errorgone = true;
 	Frame f,f_find,f_findReplace,f_prompt;
 	TextArea ta;	
 	TextField tf_find,tf_replace;	
@@ -21,14 +21,15 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 	CheckboxMenuItem bld,itlc;
 	Pattern patt;	
 	Matcher matt;	
-	int mat = 0,c = 0;	
+	int mat = 0,c = 0,caret = 0,st=0,en=0,xStart=0,xEnd=0;	
 	StringBuffer sb = new StringBuffer();
-	String fpn,allText;
+	String fpn,fpn1,fpn2,allText,a;
 	
 	public TextEditor()	
 	{
 		f = new Frame();
 		f.setSize(600,600);
+		f.setTitle("Untitled - NOTEPAD");
 		
 		ta = new TextArea();
 		f.add(ta,"Center");
@@ -48,12 +49,15 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		
 		nw.addActionListener(this);	opn.addActionListener(this); sve.addActionListener(this); svas.addActionListener(this); ext.addActionListener(this);
 		find.addActionListener(this); find_replace.addActionListener(this);
-		f.addWindowListener(this);f.addWindowListener(this);ta	.addKeyListener(this);
+		f.addWindowListener(this);f.addWindowListener(this);ta.addKeyListener(this);ta.addMouseListener(this);
 		f.setVisible(true);
 	}
 		
 	public void keyPressed(KeyEvent ke)
 	{
+		xStart = ta.getCaretPosition();
+		once = false;
+		System.out.println("Key Typed = "+xStart);
 		keypressed = true;
 	}
 	  
@@ -65,6 +69,28 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 	public void keyTyped(KeyEvent ke)
 	{
 		keypressed = true;
+	}
+	public void mouseClicked(MouseEvent me)
+	{
+		xStart = ta.getCaretPosition();
+		once = false;
+		System.out.println("Mouse CLicked = "+xStart);
+	}
+	public void mouseEntered(MouseEvent me)
+	{
+		
+	}
+	public void mouseExited(MouseEvent me)
+	{
+		
+	}
+	public void mousePressed(MouseEvent me)
+	{
+		
+	}
+	public void mouseReleased(MouseEvent me)
+	{
+		
 	}
 	
 	public void actionPerformed(ActionEvent ae)
@@ -81,44 +107,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 			{
 				if(keypressed)
 				{
-					f_prompt = new Frame();
-						f_prompt.setSize(300,200);
-					
-						Label l_prompt = new Label("Do you want to save the file?");		f_prompt.add(l_prompt,"Center");
-						Panel p_prompt = new Panel();										f_prompt.add(p_prompt,"South");
-					
-						b_prompt_save_new = new Button("Save");				p_prompt.add(b_prompt_save_new);	b_prompt_save_new.addActionListener(this);
-						b_prompt_dontsave_new_fpn = new Button("Don't Save");	p_prompt.add(b_prompt_dontsave_new_fpn);	b_prompt_dontsave_new_fpn.addActionListener(this);
-						b_prompt_cancel_new = new Button("Cancel");			p_prompt.add(b_prompt_cancel_new);	b_prompt_cancel_new.addActionListener(this);
-						
-						
-						f_prompt.addWindowListener(this);
-						f_prompt.setResizable(false);
-						f_prompt.setVisible(true);
-				}
-				else
-				{
-					
-					ta.setText("");
-					hasfilepath = false;
-					keypressed = false;
-					fpn = "";
-				}
-			}
-			else
-			{
-				if(keypressed)
-				{
-					allText = ta.getText();
-					if(allText.equals(""))
-					{
-						ta.setText("");
-						hasfilepath = false;
-						keypressed = false;
-						fpn = "";
-					}
-					else
-					{
+					if(promptgone)
+					{	
+						promptgone = false;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
@@ -137,23 +128,73 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 				}
 				else
 				{
+					
 					ta.setText("");
 					hasfilepath = false;
 					keypressed = false;
 					fpn = "";
+					f.setTitle("Untitled - NOTEPAD");
 				}
-				
 			}
-		//	System.out.print(keypressed);
-			
+			else
+			{
+				if(keypressed)
+				{
+					allText = ta.getText();
+					if(allText.equals(""))
+					{
+						ta.setText("");
+						f.setTitle("Untitled - NOTEPAD");
+						hasfilepath = false;
+						keypressed = false;
+						fpn = "";
+					}
+					else
+					{
+						if(promptgone)
+						{	
+						promptgone = false;
+						f_prompt = new Frame();
+						f_prompt.setSize(300,200);
+					
+						Label l_prompt = new Label("Do you want to save the file?");		f_prompt.add(l_prompt,"Center");
+						Panel p_prompt = new Panel();										f_prompt.add(p_prompt,"South");
+					
+						b_prompt_save_new = new Button("Save");				p_prompt.add(b_prompt_save_new);	b_prompt_save_new.addActionListener(this);
+						b_prompt_dontsave_new = new Button("Don't Save");	p_prompt.add(b_prompt_dontsave_new);	b_prompt_dontsave_new.addActionListener(this);
+						b_prompt_cancel_new = new Button("Cancel");			p_prompt.add(b_prompt_cancel_new);	b_prompt_cancel_new.addActionListener(this);
+						
+						
+						f_prompt.addWindowListener(this);
+						f_prompt.setResizable(false);
+						f_prompt.setVisible(true);
+						}
+					}
+				}
+				else
+				{
+					ta.setText("");
+					f.setTitle("Untitled - NOTEPAD");
+					hasfilepath = false;
+					keypressed = false;
+					fpn = "";
+				}
+			}
 		}
 		////////////////////////////////////////////////////////NEW NEW NEW NEW\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
 		///////////////////////////////////////////////////////New-Prompt-Save-fpn\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
-		if(ae.getSource() == b_prompt_save_new)
+		if(ae.getSource() == b_prompt_save_new_fpn)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
+			
+			if(!ta.getText().contains("\r"))
+				{
+					String newT = new String(ta.getText().replaceAll("\n","\n\r"));
+					ta.setText(newT);
+				}
 			
 			char ch[] = ta.getText().toCharArray();
 				
@@ -178,6 +219,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					}
 			
 			ta.setText("");
+			f.setTitle("Untitled - NOTEPAD");
 			hasfilepath = false;
 			keypressed = false;
 			fpn = "";
@@ -189,11 +231,15 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_save_new)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 			filesavedialog();
-			ta.setText("");
-			hasfilepath = false;
-			keypressed = false;
-			fpn = "";
+			if(fpn1!=null || fpn2!=null)
+			{
+				f.setTitle("Untitled - NOTEPAD");
+				hasfilepath = false;
+				keypressed = false;
+				ta.setText("");
+			}
 		}
 		///////////////////////////////////////////////////////NEW-PROMPT-SAVE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
@@ -202,7 +248,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_dontsave_new)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 			ta.setText("");
+			f.setTitle("Untitled - NOTEPAD");
 			hasfilepath = false;
 			keypressed = false;
 			fpn = "";
@@ -214,6 +262,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_cancel_new)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 		}
 		/////////////////////////////////////////////////////New-prompt-Cancel\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
@@ -225,6 +274,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 			{
 				if(keypressed)
 				{
+					if(promptgone)
+					{	
+					promptgone = false;
 					f_prompt = new Frame();
 					f_prompt.setSize(300,200);
 					
@@ -239,8 +291,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					f_prompt.addWindowListener(this);
 					f_prompt.setResizable(false);
 					f_prompt.setVisible(true);
-				
-					
+					}
 				}
 				else
 				{	
@@ -254,6 +305,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					allText = ta.getText();
 					if(!allText.equals(""))
 					{
+						if(promptgone)
+						{	
+						promptgone = false;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
@@ -268,7 +322,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.addWindowListener(this);
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
-					
+						}
 					}
 					else
 					{
@@ -290,6 +344,12 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_save_open_fpn)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
+			if(!ta.getText().contains("\r"))
+				{
+					String newT = new String(ta.getText().replaceAll("\n","\n\r"));
+					ta.setText(newT);
+				}
 			char ch[] = ta.getText().toCharArray();
 				
 					File fi = new File(fpn);
@@ -321,8 +381,12 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_save_open)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 			filesavedialog();
-			fileopendialog();
+			if(fpn1!=null||fpn2!=null)
+			{
+				fileopendialog();	
+			}
 		}
 		///////////////////////////////////////////////////open-prompt-save\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
@@ -331,6 +395,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_dontsave_open)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 			fileopendialog();
 		}
 		///////////////////////////////////////////////////open-prompt-dontsave\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -340,6 +405,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_cancel_open)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 		}
 		///////////////////////////////////////////////////open-prompt-cancel\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 		
@@ -348,6 +414,11 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		{
 			if(hasfilepath)
 			{
+				if(!ta.getText().contains("\r"))
+				{
+					String newT = new String(ta.getText().replaceAll("\n","\n\r"));
+					ta.setText(newT);
+				}
 				char ch[] = ta.getText().toCharArray();
 				File fi = new File(fpn);
 				FileOutputStream fos ;
@@ -386,6 +457,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		/////////////////////////////////////////FIND-FIND-FIND-FIND///////////////////////////////////////////////////////////////////
 			if(ae.getSource() == find)
 			{
+				if(replacegone == true && findgone == true)
+				{
+				findgone = false;
 				f_find = new Frame(); once = false;
 				f_find.setSize(450,150);
 				f_find.setLayout(new GridBagLayout());
@@ -407,63 +481,47 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 				f_find.addWindowListener(this);
 				f_find.setVisible(true);
 				f_find.setResizable(false);
-				
+				}
 			}
 		///////////////////////////////////////////////////FIND-FIND-FIND-FIND///////////////////////////////////////////////////////////////////
 		
 		//////////////////////////////////////////////////find-dialog-next///////////////////////////////////////////////////////////////////////
 		if(ae.getSource() == b_find_next || ae.getSource() == b_findReplace_findnext)
 		{
+		
 			String s_find = tf_find.getText();
 			
-				String a = allText.replaceAll("\r","");
-			//	a = a.replaceAll("\n","");
-				patt = Pattern.compile(s_find);
-				matt = patt.matcher(a);
-			//	System.out.print(a + "/n" + s_find);
-								
-				if(!once)
+			a = new String(allText);
+			a = a.replaceAll("\r","");
+			patt = Pattern.compile(s_find);
+			matt = patt.matcher(a);
+			ta.setText(a);
+			//x = ta.getCaretPosition();
+			if(matt.find(xStart))
+			{
+				System.out.println("Initia Start = "+xStart);
+				xStart = matt.start();
+				xEnd = matt.end();
+				ta.select(xStart,xEnd);
+				System.out.println("Start = "+xStart+"End"+xEnd);
+				xStart = ta.getCaretPosition()+ta.getSelectedText().length();
+				System.out.println("FInal Start = "+xStart);
+				f.toFront();
+			}
+			else
+			{
+				if(errorgone)
 				{
-					once = true;
-					mat = ta.getCaretPosition();
-					System.out.print(mat + "\n\n\n");
-					if(matt.find(mat))
-					{
-						System.out.print(mat);
-					//	System.out.print(matt.start() + "\t\t" + matt.end());
-						ta.select(matt.start(),matt.end());	
-						mat = matt.end();
-						f.toFront();					
-					}
-					else
-					{
-						Frame f_error = new Frame();
-						f_error.setSize(200,200);
-						Label l_error = new Label("ERROR : CANNOT FIND " + s_find); f_error.add(l_error);
-						mat = 0;
-						f_error.addWindowListener(this);
-						f_error.setVisible(true);
-						f_error.setResizable(false);
-					}
+				errorgone = false;
+				Frame f_error = new Frame();
+				f_error.setSize(200,200);
+				Label l_error = new Label("ERROR : CANNOT FIND " + s_find); f_error.add(l_error);
+				f_error.addWindowListener(this);
+				f_error.setVisible(true);
+				f_error.setResizable(false);
 				}
-				else
-				{
-					if(matt.find(mat))
-					{//System.out.print(matt.start() + "\t\t" + matt.end());
-					ta.select(matt.start(),matt.end());
-					mat = matt.end();
-					f.toFront();	}
-					else
-					{
-						Frame f_error = new Frame();
-						f_error.setSize(200,200);
-						Label l_error = new Label("No other occcurances!!"); f_error.add(l_error);
-						mat = 0;
-						f_error.addWindowListener(this);
-						f_error.setVisible(true);
-						f_error.setResizable(false);
-					}
-				}	
+			}	
+			
 		}
 		//////////////////////////////////////////////////find-dialog-next///////////////////////////////////////////////////////////////////////
 		
@@ -471,7 +529,8 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_find_cancel)
 		{
 			f_find.setVisible(false);
-			mat = 0;
+			findgone = true;
+			xStart = ta.getCaretPosition();
 			once = false;
 		}
 		//////////////////////////////////////////////////find-dialog-cancel/////////////////////////////////////////////////////////////////////
@@ -479,6 +538,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		/////////////////////////////////////////FIND AND REPLACE-FIND AND REPLACE///////////////////////////////////////////////////////////////////
 			if(ae.getSource() == find_replace)
 			{
+				if(replacegone == true && findgone == true)
+				{ 
+				replacegone = false;
 				f_findReplace = new Frame();
 				f_findReplace.setSize(450,250);
 				f_findReplace.setLayout(new GridBagLayout());
@@ -524,59 +586,77 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 				f_findReplace.addWindowListener(this);
 				f_findReplace.setVisible(true);
 				f_findReplace.setResizable(false);
-				
+				}
 			}
 		////////////////////////////////////////////////FIND AND REPLACE-FIND AND REPLACE-FIND AND REPLACE///////////////////////////////////////////
 		
 		////////////////////////////////////////////////findreplace-dialog-replace///////////////////////////////////////////////////////////////////
 		if(ae.getSource() == b_findReplace_replace)
 		{
-			String s_replace = tf_replace.getText();
 			String s_find = tf_find.getText();
-			String a = s_find.replaceAll("\r","");
-		//	a = s_find.replaceAll("\n","");
-			patt = Pattern.compile(a);
-			matt = patt.matcher(allText);
-							
+			String s_replace = tf_replace.getText();
+			String a = new String(allText);
+			a = a.replaceAll("\r","");
+			sb = new StringBuffer(a);
+			patt = Pattern.compile(s_find);
+			matt = patt.matcher(a);			
+								
 			if(!once)
-			{
+			{				
 				once = true;
-				if(matt.find(ta.getCaretPosition()))
-				{
-					System.out.print(matt.start() + "\t\t" + matt.end());
-					ta.select(matt.start(),matt.end());	
-					mat = matt.end();
-					matt.appendReplacement(sb,s_replace);
-					matt.appendTail(sb);
-					ta.setText("");
-					ta.setText(sb + "");
-					//f.tofront();
-					
-				}
-				else
-				{
-					Frame f_error = new Frame();
-					f_error.setSize(200,200);
-					Label l_error = new Label("ERROR : CANNOT FIND " + s_find); f_error.add(l_error);
-					mat = 0;
-					f_error.addWindowListener(this);
-					f_error.setVisible(true);
-					f_error.setResizable(false);
-				}
-				
+					if(matt.find(xStart))
+					{
+						xStart = matt.start();
+						xEnd = matt.end();
+						ta.select(xStart,xEnd);
+						f.toFront();					
+					}
+					else
+					{
+						if(errorgone)
+						{
+						errorgone = false;
+						Frame f_error = new Frame();
+						f_error.setSize(200,200);
+						Label l_error = new Label("ERROR : CANNOT FIND " + s_find); f_error.add(l_error);
+						f_error.addWindowListener(this);
+						f_error.setVisible(true);
+						f_error.setResizable(false);
+						}
+					}
 			}
 			else
 			{
-				if(matt.find(mat));
-				{System.out.print(matt.start() + "\t\t" + matt.end());
-				ta.select(matt.start(),matt.end());
-				mat = matt.end();
-				matt.appendReplacement(sb,s_replace);
-				matt.appendTail(sb);
-				ta.setText("");
-				ta.setText(sb + "");	}
-			}
-			sb = new StringBuffer();
+					sb.replace(xStart,xEnd,s_replace);
+					ta.setText("");
+					ta.setText(sb + "");
+					a = new String(ta.getText());
+					a = a.replaceAll("\r","");
+					sb = new StringBuffer(a);
+					patt = Pattern.compile(s_find);
+					matt = patt.matcher(a);
+					
+					if(matt.find(xStart+s_replace.length()))
+					{
+						xStart = matt.start();
+						xEnd = matt.end();
+						ta.select(xStart,xEnd);
+						f.toFront();					
+					}
+					else
+					{
+						if(errorgone)
+						{
+						errorgone = false;
+						Frame f_error = new Frame();
+						f_error.setSize(200,200);
+						Label l_error = new Label("ERROR : CANNOT FIND " + s_find); f_error.add(l_error);
+						f_error.addWindowListener(this);
+						f_error.setVisible(true);
+						f_error.setResizable(false);
+						}
+					}
+			}	
 		}
 		////////////////////////////////////////////////findreplace-dialog-replace/////////////////////////////////////////////////////////////////////
 		
@@ -587,7 +667,6 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 				String s_find = tf_find.getText();					
 				String a = allText.replaceAll(s_find,s_replace);
 				ta.setText("");
-				//trySystem.out.print(a);
 				ta.setText(a + "");
 				f.toFront();		
 		}
@@ -596,7 +675,10 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		////////////////////////////////////////////////findreplace-dialog-cancel/////////////////////////////////////////////////////////////////////
 			if(ae.getSource() == b_findReplace_cancel)
 			{
+			xStart = ta.getCaretPosition();
+				once = false;
 				f_findReplace.setVisible(false);
+				replacegone = true;
 			}
 		////////////////////////////////////////////////findreplace-dialog-cancel/////////////////////////////////////////////////////////////////////
 		
@@ -607,14 +689,16 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 			{
 				if(keypressed)
 				{
-					
+					if(promptgone)
+					{
+						promptgone = false;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
 						Label l_prompt = new Label("Do you want to save the file?");		f_prompt.add(l_prompt,"Center");
 						Panel p_prompt = new Panel();										f_prompt.add(p_prompt,"South");
 					
-						b_prompt_save_exit = new Button("Save");				p_prompt.add(b_prompt_save_exit);	b_prompt_save_exit.addActionListener(this);
+						b_prompt_save_exit_fpn = new Button("Save");				p_prompt.add(b_prompt_save_exit_fpn);	b_prompt_save_exit_fpn.addActionListener(this);
 						b_prompt_dontsave_exit = new Button("Don't Save");	p_prompt.add(b_prompt_dontsave_exit);	b_prompt_dontsave_exit.addActionListener(this);
 						b_prompt_cancel_exit = new Button("Cancel");			p_prompt.add(b_prompt_cancel_exit);	b_prompt_cancel_exit.addActionListener(this);
 						
@@ -622,6 +706,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.addWindowListener(this);
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
+					}
 				}
 				else
 				{
@@ -639,6 +724,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					}
 					else
 					{
+					if(promptgone)
+					{
+						promptgone = false;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
@@ -654,6 +742,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
 					}
+					}
 				}
 				else
 				{
@@ -667,6 +756,12 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_save_exit_fpn)
 		{
 			f_prompt.setVisible(false);
+			
+			if(!ta.getText().contains("\r"))
+				{
+					String newT = new String(ta.getText().replaceAll("\n","\n\r"));
+					ta.setText(newT);
+				}
 			
 			char ch[] = ta.getText().toCharArray();
 				
@@ -699,6 +794,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		{
 			filesavedialog();
 			f_prompt.setVisible(false);
+			promptgone = true;
 			System.exit(1);
 		}
 		/////////////////////////////////////////////////////////exit prompt save\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -707,6 +803,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_dontsave_exit)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 			System.exit(1);
 		}
 		/////////////////////////////////////////////////////////exit prompt dontsave\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -715,6 +812,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		if(ae.getSource() == b_prompt_cancel_exit)
 		{
 			f_prompt.setVisible(false);
+			promptgone = true;
 		}
 		/////////////////////////////////////////////////////////exit prompt cancel\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 	}
@@ -740,6 +838,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 			{
 				if(keypressed)
 				{
+					if(promptgone)
+					{
+						promptgone = true;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
@@ -753,7 +854,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						
 						f_prompt.addWindowListener(this);
 						f_prompt.setResizable(false);
-						f_prompt.setVisible(true);						
+						f_prompt.setVisible(true);
+					}
+												
 				}
 				else
 				{
@@ -773,6 +876,9 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					}
 					else
 					{
+				if(promptgone)
+					{
+						promptgone = true;
 						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
@@ -788,6 +894,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
 					}
+					}
 				}
 				else
 				{
@@ -801,11 +908,17 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		{
 			w.setVisible(false);
 			w.dispose();
+			promptgone = true;
+			errorgone = true;
 		}
-		if(we.getWindow() == f_find)
+		if(we.getWindow() == f_find || we.getWindow() == f_findReplace)
 		{
+			xStart = ta.getCaretPosition();
 			once = false;
-			f_find.setVisible(false);
+			findgone = true;
+			replacegone = true;
+			w.setVisible(false);
+			w.dispose();
 		}
 	}
 	
@@ -818,7 +931,10 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 			{
 				if(keypressed)
 				{
-					f_prompt = new Frame();
+				if(promptgone)
+					{
+						promptgone = true;
+						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
 						Label l_prompt = new Label("Do you want to save the file?");		f_prompt.add(l_prompt,"Center");
@@ -832,6 +948,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.addWindowListener(this);
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
+					}
 				}
 				else
 				{
@@ -851,7 +968,10 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					}
 					else
 					{
-					f_prompt = new Frame();
+				if(promptgone)
+					{
+						promptgone = true;
+						f_prompt = new Frame();
 						f_prompt.setSize(300,200);
 					
 						Label l_prompt = new Label("Do you want to save the file?");		f_prompt.add(l_prompt,"Center");
@@ -866,9 +986,11 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 						f_prompt.setResizable(false);
 						f_prompt.setVisible(true);
 					}
+					}
 				}
 				else
 				{
+				
 					w.setVisible(false);
 					w.dispose();
 					System.exit(1);
@@ -879,11 +1001,17 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 		{
 			w.setVisible(false);
 			w.dispose();
+			promptgone = true;
+			errorgone = true;
 		}
-		if(we.getWindow() == f_find)
+		if(we.getWindow() == f_find || we.getWindow() == f_findReplace)
 		{
+		xStart = ta.getCaretPosition();
+			findgone = true;
+					replacegone = true;
 			once = false;
-			f_find.setVisible(false);
+			w.setVisible(false);
+			w.dispose();
 		}
 	}
 
@@ -901,7 +1029,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 	{
 			FileDialog fd = new FileDialog(f,"Select",FileDialog.LOAD);
 					fd.setVisible(true);
-					String fpn1 = fd.getFile();			String fpn2 = fd.getDirectory();
+					fpn1 = fd.getFile();			fpn2 = fd.getDirectory();
 					if(fpn1 != null | fpn2 != null)
 					{
 						fpn = fpn2 + "/" + fpn1;
@@ -917,6 +1045,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 							fis.close();	}
 						catch(Exception ex)	
 						{	System.out.print(ex.getMessage());	}
+						f.setTitle(fpn1);
 						hasfilepath = true;
 						keypressed = false;
 					}
@@ -924,11 +1053,17 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 	
 	public void filesavedialog()
 	{
+				if(!ta.getText().contains("\r"))
+				{
+					String newT = new String(ta.getText().replaceAll("\n","\r\n"));
+					System.out.println("\n newT = " + newT);
+					ta.setText(newT);
+				}
 				FileDialog fd = new FileDialog(f,"Save As",FileDialog.SAVE);
 				fd.setVisible(true);
-				String fpn1 = fd.getFile();
-				String fpn2 = fd.getDirectory();
-				if(fpn1 != null | fpn2 != null)
+				fpn1 = fd.getFile();
+				fpn2 = fd.getDirectory();
+				if(fpn1 != null || fpn2 != null)
 				{	fpn = fpn2 + "/" + fpn1;
 					hasfilepath = true;
 					keypressed = false;
@@ -953,6 +1088,7 @@ public class TextEditor implements WindowListener,ActionListener,KeyListener
 					{
 						System.out.print(ex.getMessage());
 					}
+					f.setTitle(fpn1);
 				}
 	}
 	
